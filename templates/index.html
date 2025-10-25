@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Gas Fire Detection System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center mb-5">
+            <h1 class="display-4 text-primary">
+                <i class="fas fa-fire"></i> Gas Fire Detection System
+            </h1>
+            <p class="lead">Advanced ML-powered safety monitoring for gas leaks and fire hazards</p>
+            {% if not model_loaded %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Model Not Loaded:</strong> Please train the model first by running <code>python main.py</code>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Single Prediction Card -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-search fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Single Prediction</h5>
+                <p class="card-text">Enter sensor readings to get instant risk assessment for a specific location.</p>
+                <a href="{{ url_for('predict') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i> Start Prediction
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- System Status Card -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-chart-line fa-3x text-info"></i>
+                </div>
+                <h5 class="card-title">System Status & Results</h5>
+                <p class="card-text">View model performance, accuracy, ROC curves, and confusion matrix.</p>
+                <a href="{{ url_for('status') }}" class="btn btn-info">
+                    <i class="fas fa-chart-line"></i> View Results
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<!-- Safety Notice -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <h6><i class="fas fa-exclamation-triangle"></i> Important Safety Notice</h6>
+            <p class="mb-0">This system is designed to assist in hazard detection but should not be the sole safety measure. Always follow proper safety protocols and use certified safety equipment in critical applications.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

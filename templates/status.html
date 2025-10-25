@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}System Status & Results - Gas Fire Detection System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-center mb-4">
+            <i class="fas fa-chart-line"></i> System Status & Model Results
+        </h2>
+        <p class="text-center text-muted">Monitor system health and view model performance metrics</p>
+    </div>
+</div>
+
+<!-- Status Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                {% if status.model_loaded %}
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-success">Model Loaded</h5>
+                    <p class="text-muted">ML model is ready</p>
+                {% else %}
+                    <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                    <h5 class="text-danger">Model Not Loaded</h5>
+                    <p class="text-muted">Train model first</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                {% if status.data_file_exists %}
+                    <i class="fas fa-database fa-3x text-success mb-3"></i>
+                    <h5 class="text-success">Dataset Found</h5>
+                    <p class="text-muted">Training data available</p>
+                {% else %}
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5 class="text-warning">Dataset Missing</h5>
+                    <p class="text-muted">safehome_sensor_data.csv not found</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                {% if status.model_file_exists %}
+                    <i class="fas fa-file fa-3x text-success mb-3"></i>
+                    <h5 class="text-success">Model File Found</h5>
+                    <p class="text-muted">gas_fire_model.pkl exists</p>
+                {% else %}
+                    <i class="fas fa-file-times fa-3x text-danger mb-3"></i>
+                    <h5 class="text-danger">Model File Missing</h5>
+                    <p class="text-muted">Run training first</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                {% if accuracy > 0 %}
+                    <i class="fas fa-bullseye fa-3x text-success mb-3"></i>
+                    <h5 class="text-success">{{ "%.1f"|format(accuracy * 100) }}%</h5>
+                    <p class="text-muted">Model Accuracy</p>
+                {% else %}
+                    <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
+                    <h5 class="text-danger">No Results</h5>
+                    <p class="text-muted">Run evaluation</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if plots and accuracy > 0 %}
+<!-- Model Performance Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Model Performance Metrics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-primary">{{ "%.1f"|format(accuracy * 100) }}%</h3>
+                            <p class="text-muted">Overall Accuracy</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-success">{{ "%.3f"|format(report.Safe.precision) }}</h3>
+                            <p class="text-muted">Safe Precision</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-warning">{{ "%.3f"|format(report.Warning.precision) }}</h3>
+                            <p class="text-muted">Warning Precision</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-danger">{{ "%.3f"|format(report.Danger.precision) }}</h3>
+                            <p class="text-muted">Danger Precision</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confusion Matrix -->
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-table"></i> Confusion Matrix</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ plots.confusion_matrix }}" class="img-fluid" alt="Confusion Matrix">
+            </div>
+        </div>
+    </div>
+    
+    <!-- ROC Curve -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line"></i> ROC Curves</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ plots.roc_curve }}" class="img-fluid" alt="ROC Curves">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feature Importance -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-sort-amount-down"></i> Feature Importance</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ plots.feature_importance }}" class="img-fluid" alt="Feature Importance">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Classification Report -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clipboard-list"></i> Detailed Classification Report</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>F1-Score</th>
+                                <th>Support</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge bg-success">Safe</span></td>
+                                <td>{{ "%.3f"|format(report.Safe.precision) }}</td>
+                                <td>{{ "%.3f"|format(report.Safe.recall) }}</td>
+                                <td>{{ "%.3f"|format(report.Safe['f1-score']) }}</td>
+                                <td>{{ report.Safe.support }}</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-warning">Warning</span></td>
+                                <td>{{ "%.3f"|format(report.Warning.precision) }}</td>
+                                <td>{{ "%.3f"|format(report.Warning.recall) }}</td>
+                                <td>{{ "%.3f"|format(report.Warning['f1-score']) }}</td>
+                                <td>{{ report.Warning.support }}</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-danger">Danger</span></td>
+                                <td>{{ "%.3f"|format(report.Danger.precision) }}</td>
+                                <td>{{ "%.3f"|format(report.Danger.recall) }}</td>
+                                <td>{{ "%.3f"|format(report.Danger['f1-score']) }}</td>
+                                <td>{{ report.Danger.support }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- No Results Available -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                <h5>No Test Results Available</h5>
+                <p class="text-muted">Train the model first to see performance metrics</p>
+                <div class="mt-3">
+                    <code>python main.py</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body text-center">
+                <a href="{{ url_for('index') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                {% if status.model_loaded %}
+                    <a href="{{ url_for('predict') }}" class="btn btn-success me-2">
+                        <i class="fas fa-search"></i> Make Prediction
+                    </a>
+                {% endif %}
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    <i class="fas fa-sync-alt"></i> Refresh Results
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
